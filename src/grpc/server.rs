@@ -3,7 +3,10 @@ use tonic::{transport::Server, Request, Response, Status};
 use crate::conn::RedisFacade;
 use crate::AppConfig;
 use redis_grpc::redis_grpc_server::{RedisGrpc, RedisGrpcServer};
-use redis_grpc::{KeysRequest, KeysResponse, ParamsRequest, ParamsResponse};
+use redis_grpc::{
+    CommandRequest, CommandResponse, GetRequest, GetResponse, KeysRequest, KeysResponse,
+    SetRequest, SetResponse, SubscribeRequest, SubscribeResponse,
+};
 use std::sync::Arc;
 use std::time::Duration;
 use tokio_stream::wrappers::ReceiverStream;
@@ -25,15 +28,27 @@ impl RedisGrpcImpl {
 
 #[tonic::async_trait]
 impl RedisGrpc for RedisGrpcImpl {
-    type StreamParamsStream = ReceiverStream<Result<ParamsResponse, Status>>;
+    type SubscribeStream = ReceiverStream<Result<SubscribeResponse, Status>>;
 
-    async fn stream_params(
+    async fn command(
         &self,
-        request: Request<ParamsRequest>,
-    ) -> Result<Response<Self::StreamParamsStream>, Status> {
+        request: Request<CommandRequest>,
+    ) -> Result<Response<CommandResponse>, Status> {
+        let request = request.into_inner();
+        let redis_result = self.redis.command(request.command.as_str()).await.unwrap();
+        let grpc_response = CommandResponse {
+            message: redis_result,
+        };
+        Ok(Response::new(grpc_response))
+    }
+
+    async fn subscribe(
+        &self,
+        request: Request<SubscribeRequest>,
+    ) -> Result<Response<Self::SubscribeStream>, Status> {
         info!("Got a request: {:?}", request);
         let (mut tx, rx) = tokio::sync::mpsc::channel(4);
-        let subscribe_key = request.into_inner().key;
+        let channels = request.into_inner().channels;
         // tokio::spawn(async move {
         //     let consumer = LambdaParamsMessageConsumer(tx);
         //     RedisBackedMessageBus::subscribe_channels(vec![&subscribe_key], &consumer).await.unwrap();
@@ -54,6 +69,45 @@ impl RedisGrpc for RedisGrpcImpl {
                 success: false,
                 error: format!("{}", err),
                 result: vec![],
+            },
+        };
+        Ok(Response::new(grpc_response))
+    }
+
+    async fn set(&self, request: Request<SetRequest>) -> Result<Response<SetResponse>, Status> {
+        let request = request.into_inner();
+        let redis_result = self
+            .redis
+            .set(request.key.as_str(), request.value.as_str())
+            .await;
+        let grpc_response = match redis_result {
+            Ok(result) => SetResponse {
+                success: true,
+                error: String::default(),
+                result,
+            },
+            Err(err) => SetResponse {
+                success: false,
+                error: format!("{}", err),
+                result: String::default(),
+            },
+        };
+        Ok(Response::new(grpc_response))
+    }
+
+    async fn get(&self, request: Request<GetRequest>) -> Result<Response<GetResponse>, Status> {
+        let request = request.into_inner();
+        let redis_result = self.redis.get(request.key.as_str()).await;
+        let grpc_response = match redis_result {
+            Ok(result) => GetResponse {
+                success: true,
+                error: String::default(),
+                result,
+            },
+            Err(err) => GetResponse {
+                success: false,
+                error: format!("{}", err),
+                result: String::default(),
             },
         };
         Ok(Response::new(grpc_response))

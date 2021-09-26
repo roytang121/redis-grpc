@@ -1,0 +1,25 @@
+syntax = "proto3";
+package redis_grpc;
+
+service RedisGrpc {
+  rpc StreamParams (ParamsRequest) returns (stream ParamsResponse);
+  rpc Keys (KeysRequest) returns (KeysResponse);
+}
+
+message KeysRequest {
+  string pattern = 1;
+}
+
+message KeysResponse {
+  bool success = 1;
+  string error = 2;
+  repeated string result = 3;
+}
+
+message ParamsRequest {
+  string key = 1;
+}
+
+message ParamsResponse {
+  string json = 1;
+}

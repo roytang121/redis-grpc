@@ -1,0 +1,17 @@
+version: '3.1'
+
+services:
+  gen-js:
+    build:
+      context: .
+      dockerfile: gen-js.Dockerfile
+    working_dir: /app
+    environment:
+      - DIR=/app/proto
+      - OUT_DIR=/app/proto/gen-js
+      - PROTO_FILE=redis_grpc.proto
+    volumes:
+      - ./proto:/app/proto
+volumes:
+  postgres:
+  pgadmin:

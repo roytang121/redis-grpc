@@ -15,11 +15,15 @@ OPTIONS:
     -p, --port <PORT>    Listen on port
 ```
 
-### Commands
+## Commands
 Supports `get` `set` `keys` and arbitrary command (response casted to string)
 
 
-### Using in JavaScript
+## Usage in Browser
+### Installation
+`yarn install redis-grpc`
+> or npm install redis-grpc
+### Basic Example
 ```typescript
 /// JavaScript / TypeScript
 import { RedisGrpcPromiseClient } from 'redis-web/gen-js/redis_grpc_grpc_web_pb';
@@ -39,3 +43,7 @@ const perform_set = () => {
     .catch(console.error)
 }
 ```
+
+## License
+
+This repository is licensed under the "MIT" license. See [LICENSE](LICENSE).

@@ -9250,7 +9250,7 @@ redent@^3.0.0:
     indent-string "^4.0.0"
     strip-indent "^3.0.0"
 
-"redis-web@file:../../proto":
+"redis-grpc@file:../../proto":
   version "0.0.1"
   dependencies:
     google-protobuf "^3.18.0"

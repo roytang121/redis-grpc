@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import { RedisGrpcPromiseClient } from 'redis-web/gen-js/redis_grpc_grpc_web_pb';
-import { KeysRequest, SetRequest } from 'redis-web/gen-js/redis_grpc_pb';
+import { RedisGrpcPromiseClient } from 'redis-grpc/gen-js/redis_grpc_grpc_web_pb';
+import { KeysRequest, SetRequest } from 'redis-grpc/gen-js/redis_grpc_pb';
 
 function App() {
 

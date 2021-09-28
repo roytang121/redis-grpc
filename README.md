@@ -1,5 +1,4 @@
 # redis-web
-
 ```
 redis gRPC proxy
 
@@ -16,7 +15,7 @@ OPTIONS:
 ```
 
 ## Commands
-Supports `get` `set` `keys` and arbitrary command (response casted to string)
+Supports `keys` `get` `set` `subscribe` `channel` and arbitrary command (response casted to string)
 
 
 ## Usage in Browser
@@ -42,6 +41,25 @@ const perform_set = () => {
     .then(resp => console.log(resp.getResult()))
     .catch(console.error)
 }
+```
+
+### PubSub
+```typescript
+/// Subscribe channels
+const sub_request = new SubscribeRequest();
+sub_request.setChannelsList(["channel:1", "channel:2"]);
+const stream = client.subscribe(sub_request);
+stream.on('data', (data: SubscribeResponse) => {
+    console.log({
+        message: data.getMessage(),
+        channel: data.getChannel(),
+    })
+})
+
+/// Publish channel
+const pub_request = new PublishRequest();
+pub_request.setChannel("channel:1")
+await client.publish(pub_request);
 ```
 
 ## License

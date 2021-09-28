@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import { RedisGrpcPromiseClient } from 'redis-grpc/gen-js/redis_grpc_grpc_web_pb';
-import { KeysRequest, SetRequest } from 'redis-grpc/gen-js/redis_grpc_pb';
+import { KeysRequest, SetRequest, SubscribeRequest } from 'redis-grpc/gen-js/redis_grpc_pb';
 
 function App() {
 
@@ -21,7 +21,20 @@ function App() {
       client.set(set_cmd).then(resp => console.log(resp.getResult())).catch(console.error)
     }
 
+    const perform_subscribe = () => {
+      const sub_request = new SubscribeRequest();
+      sub_request.setChannelsList(["LambdaParams:test", "LambdaParams:test2"]);
+      const stream = client.subscribe(sub_request);
+      stream.on('data', data => {
+        console.log({
+          message: data.getMessage(),
+          channel: data.getChannel(),
+        })
+      })
+    }
+
     perform_set()
+    perform_subscribe()
   }, [])
 
   return (

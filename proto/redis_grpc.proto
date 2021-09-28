@@ -4,6 +4,7 @@ package redis_grpc;
 service RedisGrpc {
   rpc Command (CommandRequest) returns (CommandResponse);
   rpc Subscribe (SubscribeRequest) returns (stream SubscribeResponse);
+  rpc Publish (PublishRequest) returns (PublishResponse);
   rpc Keys (KeysRequest) returns (KeysResponse);
   rpc Set (SetRequest) returns (SetResponse);
   rpc Get (GetRequest) returns (GetResponse);
@@ -20,11 +21,21 @@ message KeysResponse {
 }
 
 message SubscribeRequest {
-  string channels = 1;
+  repeated string channels = 1;
 }
 
 message SubscribeResponse {
-  string message = 1;
+  string channel = 1;
+  string message = 2;
+}
+
+message PublishRequest {
+  string channel = 1;
+  string message = 2;
+}
+
+message PublishResponse {
+  int64 result = 1;
 }
 
 message CommandRequest {

@@ -1,11 +1,11 @@
-use tonic::{transport::Server, Request, Response, Status};
+use tonic::{transport::Server, Code, Request, Response, Status};
 
-use crate::conn::RedisFacade;
+use crate::conn::{MessageConsumer, RedisFacade};
 use crate::AppConfig;
 use redis_grpc::redis_grpc_server::{RedisGrpc, RedisGrpcServer};
 use redis_grpc::{
     CommandRequest, CommandResponse, GetRequest, GetResponse, KeysRequest, KeysResponse,
-    SetRequest, SetResponse, SubscribeRequest, SubscribeResponse,
+    PublishRequest, PublishResponse, SetRequest, SetResponse, SubscribeRequest, SubscribeResponse,
 };
 use std::sync::Arc;
 use std::time::Duration;
@@ -17,12 +17,16 @@ pub mod redis_grpc {
 
 pub struct RedisGrpcImpl {
     redis: RedisFacade,
+    redis_host: String,
 }
 
 impl RedisGrpcImpl {
     pub async fn new(app_config: &AppConfig) -> Self {
         let redis = RedisFacade::new(app_config.host.as_str()).await;
-        return RedisGrpcImpl { redis };
+        return RedisGrpcImpl {
+            redis,
+            redis_host: app_config.host.clone(),
+        };
     }
 }
 
@@ -49,11 +53,30 @@ impl RedisGrpc for RedisGrpcImpl {
         info!("Got a request: {:?}", request);
         let (mut tx, rx) = tokio::sync::mpsc::channel(4);
         let channels = request.into_inner().channels;
-        // tokio::spawn(async move {
-        //     let consumer = LambdaParamsMessageConsumer(tx);
-        //     RedisBackedMessageBus::subscribe_channels(vec![&subscribe_key], &consumer).await.unwrap();
-        // });
+        let url = self.redis_host.clone();
+        tokio::spawn(async move {
+            let consumer = SubscribeMessageConsumer(tx);
+            RedisFacade::subscribe_channels(&url, &channels, &consumer)
+                .await
+                .expect(format!("subscribe_channels exited: {:?}", channels).as_str());
+        });
         Ok(Response::new(ReceiverStream::new(rx)))
+    }
+
+    async fn publish(
+        &self,
+        request: Request<PublishRequest>,
+    ) -> Result<Response<PublishResponse>, Status> {
+        let request = request.into_inner();
+        let redis_result = self
+            .redis
+            .publish(request.channel.as_str(), request.message.as_str())
+            .await;
+        let grpc_response = match redis_result {
+            Ok(result) => PublishResponse { result },
+            Err(err) => return Err(Status::new(Code::Internal, format!("{}", err))),
+        };
+        Ok(Response::new(grpc_response))
     }
 
     async fn keys(&self, request: Request<KeysRequest>) -> Result<Response<KeysResponse>, Status> {
@@ -111,6 +134,22 @@ impl RedisGrpc for RedisGrpcImpl {
             },
         };
         Ok(Response::new(grpc_response))
+    }
+}
+
+pub struct SubscribeMessageConsumer(
+    tokio::sync::mpsc::Sender<Result<SubscribeResponse, tonic::Status>>,
+);
+#[tonic::async_trait]
+impl MessageConsumer for SubscribeMessageConsumer {
+    async fn consume(&self, message: redis::Msg) -> anyhow::Result<()> {
+        let response = SubscribeResponse {
+            channel: message.get_channel::<String>().unwrap(),
+            // pattern: message.get_pattern::<redis::Value>().unwrap(),
+            message: message.get_payload::<String>().unwrap(),
+        };
+        self.0.send(Ok(response)).await?;
+        Ok(())
     }
 }
 

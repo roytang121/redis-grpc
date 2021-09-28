@@ -24,7 +24,9 @@ Supports `keys` `get` `set` `subscribe` `channel` and arbitrary command (respons
 
 ## Usage in Browser
 ### Installation
-`yarn install redis-grpc`
+```
+yarn install redis-grpc
+```
 > or npm install redis-grpc
 ### Basic Example
 ```typescript

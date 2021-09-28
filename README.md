@@ -13,6 +13,10 @@ OPTIONS:
     -h, --host <HOST>    Target redis host to proxy from
     -p, --port <PORT>    Listen on port
 ```
+### Example
+```
+redis-web -h redis://localhost:10400 -p 50051
+```
 
 ## Commands
 Supports `keys` `get` `set` `subscribe` `channel` and arbitrary command (response casted to string)

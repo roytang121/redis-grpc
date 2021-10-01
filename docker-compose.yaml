@@ -1,6 +1,20 @@
 version: '3.1'
 
 services:
+  main:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - redis
+    environment:
+      - RUST_LOG=DEBUG
+    ports:
+      - '50051:50051'
+
+  redis:
+    image: redis:latest
+
   gen-js:
     build:
       context: .
@@ -12,6 +26,3 @@ services:
       - PROTO_FILE=redis_grpc.proto
     volumes:
       - ./proto:/app/proto
-volumes:
-  postgres:
-  pgadmin:

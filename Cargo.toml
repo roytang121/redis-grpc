@@ -1,5 +1,5 @@
 [package]
-name = "redis-web"
+name = "redis-grpc"
 version = "0.1.0"
 edition = "2018"
 

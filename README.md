@@ -1,9 +1,9 @@
-# redis-web
+# redis-grpc
 ```
 redis gRPC proxy
 
 USAGE:
-    redis-web [OPTIONS]
+    redis-grpc [OPTIONS]
 
 FLAGS:
         --help       Print help information
@@ -15,7 +15,7 @@ OPTIONS:
 ```
 ### Example
 ```
-redis-web -h redis://localhost:10400 -p 50051
+redis-grpc -h redis://localhost:10400 -p 50051
 ```
 
 ## Commands
@@ -31,8 +31,8 @@ yarn install redis-grpc
 ### Basic Example
 ```typescript
 /// JavaScript / TypeScript
-import { RedisGrpcPromiseClient } from 'redis-web/gen-js/redis_grpc_grpc_web_pb';
-import { KeysRequest, SetRequest } from 'redis-web/gen-js/redis_grpc_pb';
+import { RedisGrpcPromiseClient } from 'redis-grpc/gen-js/redis_grpc_grpc_web_pb';
+import { KeysRequest, SetRequest } from 'redis-grpc/gen-js/redis_grpc_pb';
 
 const perform_set = () => {
   const client = new RedisGrpcPromiseClient("http://localhost:50051");

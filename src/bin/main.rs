@@ -1,6 +1,6 @@
 use clap::{App, Error};
-use redis_web::grpc::server::RedisGrpcService;
-use redis_web::AppConfig;
+use redis_grpc::grpc::server::RedisGrpcService;
+use redis_grpc::AppConfig;
 
 #[tracing::instrument]
 #[tokio::main]
@@ -9,7 +9,7 @@ async fn main() -> anyhow::Result<()> {
 
     let mut app_config = AppConfig::default();
 
-    let matches = App::new("redis-web")
+    let matches = App::new("redis-grpc")
         .version("0.0.1")
         .author("Roy Tang. <me@roytang.me>")
         .about("redis gRPC proxy")
@@ -28,7 +28,7 @@ async fn main() -> anyhow::Result<()> {
     tracing::info!(
         port = app_config.port,
         host = app_config.host.as_str(),
-        "starting redis-web",
+        "starting redis-grpc",
     );
 
     let service = RedisGrpcService::new();

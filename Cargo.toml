@@ -1,7 +1,12 @@
 [package]
 name = "redis-grpc"
-version = "0.1.0"
+version = "0.0.2"
 edition = "2018"
+authors = ["Roy Tang. <me@roytang.me>"]
+description = "gRPC bridging for redis"
+readme = "README.md"
+license-file = "LICENSE"
+keywords = ["gRPC", "redis", "web"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

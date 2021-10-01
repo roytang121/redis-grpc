@@ -17,7 +17,7 @@ async fn main() -> anyhow::Result<()> {
         .arg("-h --host=[HOST] 'Target redis host to proxy from'")
         .get_matches();
 
-    match matches.value_of_t::<usize>("port") {
+    match matches.value_of_t::<String>("port") {
         Ok(port) => app_config.port = port,
         Err(_) => {}
     }
@@ -26,7 +26,7 @@ async fn main() -> anyhow::Result<()> {
         Err(_) => {}
     }
     tracing::info!(
-        port = app_config.port,
+        port = app_config.port.as_str(),
         host = app_config.host.as_str(),
         "starting redis-grpc",
     );

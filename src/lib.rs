@@ -6,15 +6,14 @@ pub mod grpc;
 
 #[derive(Debug)]
 pub struct AppConfig {
-    pub port: usize,
+    pub port: String,
     pub host: String,
 }
 
 impl Default for AppConfig {
     fn default() -> Self {
-        AppConfig {
-            port: 50051,
-            host: String::from("redis://0.0.0.0:6349"),
-        }
+        let port = std::env::var("REDIS_GRPC_PORT").unwrap_or("50051".to_string());
+        let host = std::env::var("REDIS_GRPC_HOST").unwrap_or("redis://0.0.0.0:6379".to_string());
+        AppConfig { port, host }
     }
 }

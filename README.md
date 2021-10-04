@@ -23,7 +23,7 @@ Supports `keys` `get` `set` `subscribe` `publish`
 ## Server Side Usage
 ### Usage in CLI
 ```sh
-redis-grpc -h redis://localhost:10400 -p 50051
+redis-grpc -h redis://localhost:6379 -p 50051
 ```
 > more commonly, used with docker-compose
 ### Usage with Docker Compose

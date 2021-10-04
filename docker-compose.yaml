@@ -9,6 +9,8 @@ services:
       - redis
     environment:
       - RUST_LOG=DEBUG
+      - REDIS_GRPC_HOST=redis://redis:6379
+      - REDIS_GRPC_PORT=50051
     ports:
       - '50051:50051'
 

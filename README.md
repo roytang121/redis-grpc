@@ -13,21 +13,47 @@ OPTIONS:
     -h, --host <HOST>    Target redis host to proxy from
     -p, --port <PORT>    Listen on port
 ```
-### Example
+
+## Supported Redis Commands
 ```
+Supports `keys` `get` `set` `subscribe` `publish` 
+# and arbitrary command (response casted to string)
+```
+
+## Server Side Usage
+### Usage in CLI
+```sh
 redis-grpc -h redis://localhost:10400 -p 50051
 ```
+> more commonly, used with docker-compose
+### Usage with Docker Compose
+```docker
+version: '3.1'
 
-## Commands
-Supports `keys` `get` `set` `subscribe` `channel` and arbitrary command (response casted to string)
+services:
+  redis:
+    image: redis:latest
+    ports:
+      - 6379:6379
 
+  redis-grpc:
+    image: roytang/redis-grpc:latest
+    depends_on:
+      - redis
+    environment:
+      - RUST_LOG=INFO
+      - REDIS_GRPC_PORT=50051
+      - REDIS_GRPC_HOST=redis://redis:6379
+    ports:
+      - '50051:50051'
+```
 
-## Usage in Browser
+## Client Side Usage - Browser
+Calling redis commands in browser with JavaScript / TypeScript.
 ### Installation
 ```
-yarn install redis-grpc
+npm install redis-grpc
 ```
-> or npm install redis-grpc
 ### Basic Example
 ```typescript
 /// JavaScript / TypeScript
@@ -45,7 +71,7 @@ const perform_set = () => {
 
   client.set(req)
     .then(resp => console.log(resp.getResult()))
-    .catch(console.error)
+    .catch(console.error);
 }
 ```
 
@@ -56,11 +82,11 @@ const sub_request = new SubscribeRequest();
 sub_request.setChannelsList(["channel:1", "channel:2"]);
 const stream = client.subscribe(sub_request);
 stream.on('data', (data: SubscribeResponse) => {
-    console.log({
-        message: data.getMessage(),
-        channel: data.getChannel(),
-    })
-})
+  console.log({
+    message: data.getMessage(),
+      channel: data.getChannel(),
+  })
+});
 
 /// Publish channel
 const pub_request = new PublishRequest();
@@ -69,5 +95,4 @@ await client.publish(pub_request);
 ```
 
 ## License
-
 This repository is licensed under the "MIT" license. See [LICENSE](LICENSE).

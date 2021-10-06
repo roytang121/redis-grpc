@@ -8,7 +8,7 @@ services:
     depends_on:
       - redis
     environment:
-      - RUST_LOG=DEBUG
+      - RUST_LOG=WARN
       - REDIS_GRPC_HOST=redis://redis:6379
       - REDIS_GRPC_PORT=50051
     ports:
@@ -16,6 +16,8 @@ services:
 
   redis:
     image: redis:latest
+    ports:
+      - '6379:6379'
 
   gen-js:
     build:

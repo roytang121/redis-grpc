@@ -22,8 +22,17 @@ Supports `keys` `get` `set` `subscribe` `publish`
 
 ## Server Side Usage
 ### Usage in CLI
-```sh
+```shell
 redis-grpc -h redis://localhost:6379 -p 50051
+```
+### Usage with Docker CLI
+```shell
+docker run --rm \
+  --network=host \
+  -e REDIS_GRPC_HOST=redis://localhost:6379 \
+  -e REDIS_GRPC_PORT=50051 \
+  -e RUST_LOG=INFO \
+  roytang121/redis-grpc:latest
 ```
 > more commonly, used with docker-compose
 ### Usage with Docker Compose

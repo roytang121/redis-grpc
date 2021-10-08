@@ -1,12 +1,12 @@
 use tonic::{transport::Server, Code, Request, Response, Status};
 
-use crate::conn::{MessageConsumer, RedisFacade};
-use crate::AppConfig;
-use redis_grpc::redis_grpc_server::{RedisGrpc, RedisGrpcServer};
-use redis_grpc::{
+use self::redis_grpc::redis_grpc_server::{RedisGrpc, RedisGrpcServer};
+use self::redis_grpc::{
     CommandRequest, CommandResponse, GetRequest, GetResponse, KeysRequest, KeysResponse,
     PublishRequest, PublishResponse, SetRequest, SetResponse, SubscribeRequest, SubscribeResponse,
 };
+use crate::conn::{MessageConsumer, RedisFacade};
+use crate::AppConfig;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio_stream::wrappers::ReceiverStream;

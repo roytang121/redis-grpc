@@ -21,7 +21,7 @@ Supports `keys` `get` `set` `subscribe` `publish`
 ```
 
 ## Server Side Usage
-### Usage in CLI
+### Usage with Binary
 ```shell
 redis-grpc -h redis://localhost:6379 -p 50051
 ```

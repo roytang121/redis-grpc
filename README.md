@@ -37,7 +37,7 @@ services:
       - 6379:6379
 
   redis-grpc:
-    image: roytang/redis-grpc:latest
+    image: roytang121/redis-grpc:latest
     depends_on:
       - redis
     environment:

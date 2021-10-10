@@ -2,13 +2,12 @@ use tonic::{transport::Server, Code, Request, Response, Status};
 
 use self::redis_grpc::redis_grpc_server::{RedisGrpc, RedisGrpcServer};
 use self::redis_grpc::{
-    CommandRequest, CommandResponse, GetRequest, GetResponse, KeysRequest, KeysResponse,
-    PublishRequest, PublishResponse, SetRequest, SetResponse, SubscribeRequest, SubscribeResponse,
+    CommandRequest, CommandResponse, DelRequest, GetRequest, IntResponse, KeysRequest,
+    LPushRequest, PublishRequest, RPushRequest, SetRequest, StringListResponse, StringResponse,
+    SubscribeRequest, SubscribeResponse,
 };
-use crate::conn::{MessageConsumer, RedisFacade};
+use crate::facade::{MessageConsumer, RedisFacade};
 use crate::AppConfig;
-use std::sync::Arc;
-use std::time::Duration;
 use tokio_stream::wrappers::ReceiverStream;
 
 pub mod redis_grpc {
@@ -30,9 +29,34 @@ impl RedisGrpcImpl {
     }
 }
 
+fn handle_string_result(
+    result: anyhow::Result<Option<String>>,
+) -> anyhow::Result<StringResponse, Status> {
+    return match result {
+        Ok(result) => Ok(StringResponse { result }),
+        Err(error) => Err(Status::new(Code::Internal, error.to_string())),
+    };
+}
+
+fn handle_int_result(result: anyhow::Result<i64>) -> anyhow::Result<IntResponse, Status> {
+    return match result {
+        Ok(result) => Ok(IntResponse { result }),
+        Err(error) => Err(Status::new(Code::Internal, error.to_string())),
+    };
+}
+
+fn handle_string_array_result(
+    result: anyhow::Result<Vec<String>>,
+) -> anyhow::Result<StringListResponse, Status> {
+    return match result {
+        Ok(result) => Ok(StringListResponse { result }),
+        Err(error) => Err(Status::new(Code::Internal, error.to_string())),
+    };
+}
+
 #[tonic::async_trait]
 impl RedisGrpc for RedisGrpcImpl {
-    type SubscribeStream = ReceiverStream<Result<SubscribeResponse, Status>>;
+    type subscribeStream = ReceiverStream<Result<SubscribeResponse, Status>>;
 
     async fn command(
         &self,
@@ -49,9 +73,9 @@ impl RedisGrpc for RedisGrpcImpl {
     async fn subscribe(
         &self,
         request: Request<SubscribeRequest>,
-    ) -> Result<Response<Self::SubscribeStream>, Status> {
+    ) -> Result<Response<Self::subscribeStream>, Status> {
         info!("Got a request: {:?}", request);
-        let (mut tx, rx) = tokio::sync::mpsc::channel(4);
+        let (tx, rx) = tokio::sync::mpsc::channel(4);
         let channels = request.into_inner().channels;
         let url = self.redis_host.clone();
         tokio::spawn(async move {
@@ -66,74 +90,61 @@ impl RedisGrpc for RedisGrpcImpl {
     async fn publish(
         &self,
         request: Request<PublishRequest>,
-    ) -> Result<Response<PublishResponse>, Status> {
+    ) -> Result<Response<IntResponse>, Status> {
         let request = request.into_inner();
         let redis_result = self
             .redis
             .publish(request.channel.as_str(), request.message.as_str())
             .await;
-        let grpc_response = match redis_result {
-            Ok(result) => PublishResponse { result },
-            Err(err) => return Err(Status::new(Code::Internal, format!("{}", err))),
-        };
-        Ok(Response::new(grpc_response))
+        Ok(Response::new(handle_int_result(redis_result)?))
     }
 
-    async fn keys(&self, request: Request<KeysRequest>) -> Result<Response<KeysResponse>, Status> {
+    async fn keys(
+        &self,
+        request: Request<KeysRequest>,
+    ) -> Result<Response<StringListResponse>, Status> {
         let request = request.into_inner();
         let redis_result = self.redis.keys(request.pattern.as_str()).await;
-        let grpc_response = match redis_result {
-            Ok(result) => KeysResponse {
-                success: true,
-                error: String::default(),
-                result,
-            },
-            Err(err) => KeysResponse {
-                success: false,
-                error: format!("{}", err),
-                result: vec![],
-            },
-        };
-        Ok(Response::new(grpc_response))
+        Ok(Response::new(handle_string_array_result(redis_result)?))
     }
 
-    async fn set(&self, request: Request<SetRequest>) -> Result<Response<SetResponse>, Status> {
+    async fn set(&self, request: Request<SetRequest>) -> Result<Response<StringResponse>, Status> {
         let request = request.into_inner();
         let redis_result = self
             .redis
             .set(request.key.as_str(), request.value.as_str())
             .await;
-        let grpc_response = match redis_result {
-            Ok(result) => SetResponse {
-                success: true,
-                error: String::default(),
-                result,
-            },
-            Err(err) => SetResponse {
-                success: false,
-                error: format!("{}", err),
-                result: String::default(),
-            },
-        };
-        Ok(Response::new(grpc_response))
+        Ok(Response::new(handle_string_result(redis_result)?))
     }
 
-    async fn get(&self, request: Request<GetRequest>) -> Result<Response<GetResponse>, Status> {
+    async fn get(&self, request: Request<GetRequest>) -> Result<Response<StringResponse>, Status> {
         let request = request.into_inner();
         let redis_result = self.redis.get(request.key.as_str()).await;
-        let grpc_response = match redis_result {
-            Ok(result) => GetResponse {
-                success: true,
-                error: String::default(),
-                result,
-            },
-            Err(err) => GetResponse {
-                success: false,
-                error: format!("{}", err),
-                result: String::default(),
-            },
-        };
-        Ok(Response::new(grpc_response))
+        Ok(Response::new(handle_string_result(redis_result)?))
+    }
+
+    async fn del(&self, request: Request<DelRequest>) -> Result<Response<IntResponse>, Status> {
+        let request = request.into_inner();
+        let redis_result = self.redis.del(request.key.as_str()).await;
+        Ok(Response::new(handle_int_result(redis_result)?))
+    }
+
+    async fn lpush(&self, request: Request<LPushRequest>) -> Result<Response<IntResponse>, Status> {
+        let request = request.into_inner();
+        let redis_result = self
+            .redis
+            .lpush(request.key.as_str(), request.element.as_str())
+            .await;
+        Ok(Response::new(handle_int_result(redis_result)?))
+    }
+
+    async fn rpush(&self, request: Request<RPushRequest>) -> Result<Response<IntResponse>, Status> {
+        let request = request.into_inner();
+        let redis_result = self
+            .redis
+            .rpush(request.key.as_str(), request.element.as_str())
+            .await;
+        Ok(Response::new(handle_int_result(redis_result)?))
     }
 }
 
@@ -166,7 +177,6 @@ impl RedisGrpcService {
             .add_service(tonic_web::enable(RedisGrpcServer::new(redis_grpc)))
             .serve(socket_addr)
             .await?;
-
         Ok(())
     }
 }

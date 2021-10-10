@@ -1,4 +1,4 @@
-use clap::{App, Error};
+use clap::App;
 use redis_grpc::grpc::server::RedisGrpcService;
 use redis_grpc::AppConfig;
 
@@ -30,6 +30,13 @@ async fn main() -> anyhow::Result<()> {
         host = app_config.host.as_str(),
         "starting redis-grpc",
     );
+
+    // handle termination
+    ctrlc::set_handler(move || {
+        log::warn!("Received termination signal");
+        std::process::exit(0x0100);
+    })
+    .expect("ctrlc uncaught");
 
     let service = RedisGrpcService::new();
     return match service.subscribe(&app_config).await {

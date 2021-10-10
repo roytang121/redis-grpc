@@ -14,4 +14,4 @@ RUN ~/.cargo/bin/cargo build --release
 FROM alpine:latest
 WORKDIR /root/
 COPY --from=0 /root/target/release/redis-grpc /root/redis-grpc
-ENTRYPOINT /root/redis-grpc
+ENTRYPOINT ["/root/redis-grpc"]

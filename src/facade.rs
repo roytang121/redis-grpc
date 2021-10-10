@@ -1,6 +1,5 @@
-use redis::{AsyncCommands, RedisResult, Value};
+use redis::{AsyncCommands, Value};
 use tokio_stream::StreamExt;
-use tonic::IntoRequest;
 
 #[tonic::async_trait]
 pub trait MessageConsumer {
@@ -30,18 +29,24 @@ impl RedisFacade {
         self.conn.clone()
     }
 
-    fn format_redis_value(value: redis::Value) -> String {
+    fn format_redis_value(value: redis::Value) -> Option<String> {
         match value {
-            Value::Nil => String::from("(nil)"),
-            Value::Int(value) => format!("{}", value),
-            Value::Data(data) => String::from_utf8(data).unwrap(),
-            Value::Bulk(data) => format!("{:?}", data),
-            Value::Status(status) => format!("{}", status),
-            Value::Okay => String::from("OK"),
+            Value::Nil => None,
+            Value::Int(value) => Some(format!("{}", value)),
+            Value::Data(data) => Some(String::from_utf8(data).unwrap()),
+            Value::Bulk(data) => Some(format!(
+                "{:?}",
+                data.into_iter()
+                    .map(Self::format_redis_value)
+                    .map(|val| val.unwrap_or_default())
+                    .collect::<Vec<String>>()
+            )),
+            Value::Status(status) => Some(status),
+            Value::Okay => Some(String::from("OK")),
         }
     }
 
-    pub async fn command(&self, command: &str) -> anyhow::Result<String> {
+    pub async fn command(&self, command: &str) -> anyhow::Result<Option<String>> {
         let mut conn = self.get_conn();
         let args = command.split(" ").collect::<Vec<&str>>();
         let mut cmd = redis::cmd(args.get(0).unwrap());
@@ -60,16 +65,34 @@ impl RedisFacade {
         Ok(response)
     }
 
-    pub async fn set(&self, k: &str, v: &str) -> anyhow::Result<String> {
+    pub async fn set(&self, k: &str, v: &str) -> anyhow::Result<Option<String>> {
         let mut conn = self.get_conn();
         let response = conn.set::<&str, &str, Value>(k, v).await?;
         Ok(RedisFacade::format_redis_value(response))
     }
 
-    pub async fn get(&self, k: &str) -> anyhow::Result<String> {
+    pub async fn get(&self, k: &str) -> anyhow::Result<Option<String>> {
         let mut conn = self.get_conn();
         let response = conn.get::<&str, Value>(k).await?;
         Ok(RedisFacade::format_redis_value(response))
+    }
+
+    pub async fn del(&self, k: &str) -> anyhow::Result<i64> {
+        let mut conn = self.get_conn();
+        let response = conn.del::<&str, i64>(k).await?;
+        Ok(response)
+    }
+
+    pub async fn lpush(&self, k: &str, element: &str) -> anyhow::Result<i64> {
+        let mut conn = self.get_conn();
+        let response = conn.lpush::<&str, &str, i64>(k, element).await?;
+        Ok(response)
+    }
+
+    pub async fn rpush(&self, k: &str, element: &str) -> anyhow::Result<i64> {
+        let mut conn = self.get_conn();
+        let response = conn.rpush::<&str, &str, i64>(k, element).await?;
+        Ok(response)
     }
 
     pub async fn subscribe_channels<T>(

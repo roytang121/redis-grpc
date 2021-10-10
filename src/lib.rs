@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate tracing;
 
-pub mod conn;
+pub mod facade;
 pub mod grpc;
 
 #[derive(Debug)]

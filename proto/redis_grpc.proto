@@ -1,6 +1,10 @@
 syntax = "proto3";
 package redis_grpc;
 
+/**
+* RedisGrpc Service
+* author: Roy.Tang <me@roytang.me>
+*/
 service RedisGrpc {
   rpc command (CommandRequest) returns (CommandResponse);
   rpc subscribe (SubscribeRequest) returns (stream SubscribeResponse);
@@ -13,24 +17,30 @@ service RedisGrpc {
   rpc rpush (RPushRequest) returns (IntResponse);
 }
 
-// Generic Type Response
+// Generic String Type Response
 message StringResponse {
+  // String result
   optional string result = 1;
 }
 
+// Generic Integer Type Response
 message IntResponse {
+  // Integer result
   int64 result = 1;
 }
 
+// Generic List<String> Type Response
 message StringListResponse {
+  // List<String> result
   repeated string result = 1;
 }
 
-// Redis Command
+// https://redis.io/commands/keys
 message KeysRequest {
   string pattern = 1;
 }
 
+// https://redis.io/commands/subscribe
 message SubscribeRequest {
   repeated string channels = 1;
 }

@@ -23,5 +23,5 @@ RUN chmod +x /usr/local/bin/protoc-gen-doc
 CMD ./protoc-bin/bin/protoc -I=$DIR $PROTO_FILE \
                --js_out=import_style=commonjs:$OUT_DIR \
                --doc_out=$DIR \
-               --doc_opt=markdown,docs.md \
+               --doc_opt=markdown,README.md \
                --grpc-web_out=import_style=commonjs+dts,mode=grpcwebtext:$OUT_DIR

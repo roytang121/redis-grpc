@@ -8,8 +8,6 @@ on:
 
 jobs:
   publish-npm:
-    needs:
-      - publish-docker-hub
     runs-on: ubuntu-latest
     defaults:
       run:

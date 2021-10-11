@@ -1,9 +1,8 @@
 name: Docker Image
 
 on:
-  push:
-    branches:
-      - 'latest'
+  release:
+    types: [created]
 
 jobs:
   docker:
@@ -22,9 +21,15 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       -
+        name: Get release
+        id: get_release
+        uses: bruceadams/get-release@v1.2.3
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      -
         name: Build and push
         id: docker_build
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: roytang121/redis-grpc:latest
+          tags: roytang121/redis-grpc:${{ steps.get_release.outputs.tag_name }}

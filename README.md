@@ -15,10 +15,7 @@ OPTIONS:
 ```
 
 ## Supported Redis Commands
-```
-Supports `keys` `get` `set` `subscribe` `publish` 
-# and arbitrary command (response casted to string)
-```
+> 📖 See [Proto Documentation](proto/README.md)
 
 ## Server Side Usage
 ### Usage with Binary

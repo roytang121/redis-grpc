@@ -23,8 +23,8 @@ jobs:
       - run: npm ci
       - run: npm test
       - name: gen-js
-        working-directory: ../
-        run: docker-compose -f "docker-compose.yml" run --rm gen-js
+        working-directory: ./
+        run: docker-compose -f "docker-compose.yaml" run --rm gen-js
 
 
   publish-npm:

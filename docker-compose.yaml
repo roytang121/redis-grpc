@@ -30,3 +30,4 @@ services:
       - PROTO_FILE=redis_grpc.proto
     volumes:
       - ./proto:/app/proto
+      - ./proto/gen-js:/app/proto/gen-js

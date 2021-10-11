@@ -12,35 +12,40 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./proto
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
           node-version: 14
-      - working-directory: ./frontend
-        run: npm ci
-      - working-directory: ./frontend
-        run: npm test
+      - run: npm ci
+      - run: npm test
 
   publish-npm:
     needs: build
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./proto
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
           node-version: 14
           registry-url: https://registry.npmjs.org/
-      - working-directory: ./frontend
-        run: npm ci
-      - working-directory: ./frontend
-        run: npm publish
+      - run: npm ci
+      - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
 
   publish-gpr:
     needs: build
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./proto
     permissions:
       contents: read
       packages: write
@@ -50,9 +55,7 @@ jobs:
         with:
           node-version: 14
           registry-url: https://npm.pkg.github.com/
-      - working-directory: ./frontend
-        run: npm ci
-      - working-directory: ./frontend
-        run: npm publish
+      - run: npm ci
+      - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}

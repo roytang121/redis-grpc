@@ -1,6 +1,6 @@
 [package]
 name = "redis-grpc"
-version = "0.0.4"
+version = "0.0.5"
 edition = "2018"
 authors = ["Roy Tang. <me@roytang.me>"]
 description = "gRPC bridging for redis"

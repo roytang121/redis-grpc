@@ -22,7 +22,7 @@ jobs:
           node-version: 14
       - run: npm ci
       - run: npm test
-      - name: gen-js
+      - name: Docker - gen-js
         working-directory: ./
         run: docker-compose -f "docker-compose.yaml" run --rm gen-js
 
@@ -60,6 +60,6 @@ jobs:
           node-version: 14
           registry-url: https://npm.pkg.github.com/
       - run: npm ci
-      - run: npm publish
+      - run: npm publish --registry=https://npm.pkg.github.com/
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}

@@ -1,4 +1,4 @@
-name: Docker Image
+name: Publish Docker Image
 
 on:
   release:
@@ -33,22 +33,3 @@ jobs:
         with:
           push: true
           tags: roytang121/redis-grpc:${{ steps.get_release.outputs.tag_name }},roytang121/redis-grpc:latest
-  publish-npm:
-    needs:
-      - publish-docker-hub
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./proto
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: 14
-      - name: gen-js
-        working-directory: ./
-        run: docker-compose -f "docker-compose.yaml" run --rm gen-js
-      - name: publish-npm
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}

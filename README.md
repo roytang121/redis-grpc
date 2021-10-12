@@ -1,4 +1,5 @@
 # redis-grpc
+[![Rust](https://github.com/roytang121/redis-grpc/actions/workflows/rust.yml/badge.svg?branch=master)](https://github.com/roytang121/redis-grpc/actions/workflows/rust.yml)
 ```
 redis gRPC proxy
 

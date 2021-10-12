@@ -1,0 +1,28 @@
+name: Build Artifact
+
+on:
+  workflow_dispatch
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Rust project
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --all-features
+      - uses: actions/download-artifact@v2
+        with:
+          name: redis-grpc
+          path: ./target/release/
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: ./target/release/

@@ -21,7 +21,8 @@ jobs:
           args: --release --all-features
       - uses: actions/download-artifact@v2
         with:
-          path: ./
+          name: redis-grpc
+          path: ./target/release/
       - name: Display structure of downloaded files
         run: ls -R
         working-directory: ./target/release/

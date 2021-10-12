@@ -21,12 +21,11 @@ jobs:
           args: --release --all-features
       # extract branch name
       - name: Extract branch name
-        if: github.event_name != 'pull_request'
         shell: bash
-        run: echo "::set-env name=BRANCH_NAME::$(echo ${GITHUB_REF#refs/heads/})"
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
         id: extract_branch
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: redis-grpc-${{ BRANCH_NAME }}-linux-x86_64
+          name: redis-grpc-${{ steps.extract_branch.outputs.branch }}-linux-x86_64
           path: target/release/redis-grpc

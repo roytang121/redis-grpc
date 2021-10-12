@@ -19,10 +19,8 @@ jobs:
         with:
           command: build
           args: --release --all-features
-      - uses: actions/download-artifact@v2
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
         with:
           name: redis-grpc
-          path: ./target/release/redis-grpc
-      - name: Display structure of downloaded files
-        run: ls -R
-        working-directory: ./target/release/
+          path: target/release/redis-grpc

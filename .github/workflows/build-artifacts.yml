@@ -22,5 +22,5 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: redis-grpc
+          name: redis-grpc-${ GITHUB_REF##*/ }-linux-x86_64
           path: target/release/redis-grpc

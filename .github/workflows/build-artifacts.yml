@@ -22,7 +22,7 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: redis-grpc
-          path: ./target/release/
+          path: ./target/release/redis-grpc
       - name: Display structure of downloaded files
         run: ls -R
         working-directory: ./target/release/
